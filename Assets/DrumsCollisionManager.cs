@@ -7,26 +7,31 @@ public class DrumsCollisionManager : MonoBehaviour
     public AudioClip defaultDrumSounds;
     public AudioSource audioSource;
 
+    void FixedUpdate()
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position, transform.forward, out hit, 0.1f))
+        {
+            if (hit.collider.CompareTag("Stick"))
+            {
+                PlayDrumSound(hit.collider.GetComponent<DrumStick>());
+            }
+        }
+    }
+
     private void OnCollisionEnter(Collision collision)
     {
-        Debug.Log("Drum hit with : " + collision.gameObject.name);
+        if(collision.gameObject.CompareTag("Stick"))
+            PlayDrumSound(collision.gameObject.GetComponent<DrumStick>());
+
+    }
+
+    private void PlayDrumSound(DrumStick drumStick)
+    {
         audioSource.clip = defaultDrumSounds;
         audioSource.Play();
 
-        SendHapticFeedback();
-    }
-
-    void SendHapticFeedback()
-    {
-        // Définir l'intensité et la durée du retour haptique
-        float intensity = 0.5f;
-        float duration = 0.1f;
-
-        // Envoyer le retour haptique à la manette droite
-        var hapticDevice = InputSystem.GetDevice<XRController>(CommonUsages.RightHand);
-        if (hapticDevice != null)
-        {
-            //hapticDevice.SendImpulse(0, intensity, duration);
-        }
+        if(drumStick != null)
+            drumStick.SendHapticImpulse();
     }
 }
